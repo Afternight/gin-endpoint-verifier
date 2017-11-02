@@ -10,8 +10,8 @@ import (
 
 
 type FieldRequirements struct  {
-	name string
-	format *regexp.Regexp
+	Name   string
+	Format *regexp.Regexp
 }
 
 func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string, error) {
@@ -19,20 +19,20 @@ func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string
 	finalValues := make(map[string]string)
 
 	for _,value := range verify {
-		field, exists := c.GetPostForm(value.name)
+		field, exists := c.GetPostForm(value.Name)
 
 		if !exists {
-			error := fmt.Sprintf("\"%s\" is needed for this request",value.name)
+			error := fmt.Sprintf("\"%s\" is needed for this request",value.Name)
 			errorStrings = append(errorStrings, error)
 			continue
 		}
 
-		if value.format != nil && !value.format.MatchString(field){
-			error := fmt.Sprintf("\"%s\" is invalid for \"%s\", should match \"%s\" ",field,value.name,value.format.String())
+		if value.Format != nil && !value.Format.MatchString(field){
+			error := fmt.Sprintf("\"%s\" is invalid for \"%s\", should match \"%s\" ",field,value.Name,value.Format.String())
 			errorStrings = append(errorStrings, error)
 			continue
 		}
-		finalValues[value.name] = field
+		finalValues[value.Name] = field
 	}
 
 	if len(errorStrings) > 0 {
