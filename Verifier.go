@@ -9,12 +9,12 @@ import (
 )
 
 
-type fieldRequirements struct  {
+type FieldRequirements struct  {
 	name string
 	format *regexp.Regexp
 }
 
-func verifyInput(c * gin.Context, verify []fieldRequirements) (map[string]string, error) {
+func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string, error) {
 	var errorStrings []string
 	finalValues := make(map[string]string)
 
