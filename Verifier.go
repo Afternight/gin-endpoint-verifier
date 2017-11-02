@@ -14,6 +14,9 @@ type FieldRequirements struct  {
 	Format *regexp.Regexp
 }
 
+const EmailRegexString = `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
+const AllAcceptingRegexString = "^*"
+
 func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string, error) {
 	var errorStrings []string
 	finalValues := make(map[string]string)
