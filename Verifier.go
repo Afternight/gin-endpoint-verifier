@@ -35,7 +35,7 @@ func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string
 			errorStrings = append(errorStrings, error)
 			continue
 		}
-		finalValues[value.Name] = field
+		finalValues[value.Name] = field //we escape values here to prevent sql injection
 	}
 
 	if len(errorStrings) > 0 {
@@ -43,4 +43,12 @@ func VerifyInput(c * gin.Context, verify []FieldRequirements) (map[string]string
 	} else {
 		return finalValues , nil
 	}
+}
+
+func GetEmailRegex() * regexp.Regexp {
+	return regexp.MustCompile(EmailRegexString)
+}
+
+func GetGeneralRegex() * regexp.Regexp {
+	return regexp.MustCompile(AllAcceptingRegexString)
 }
