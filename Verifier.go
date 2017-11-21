@@ -21,14 +21,14 @@ const AllAcceptingRegexString = "^*"
 const FormEncodedHeader = "application/x-www-form-urlencoded; charset=utf-8"
 
 //todo fix this horrible code duplication
-func ObtainVerifyPostInput(c * gin.Context, verify []FieldRequirements) (map[string]string, error) {
+func ObtainVerifyPostInput(c * gin.Context, verify []FieldRequirements) (map[string]interface{}, error) {
 	headerErr := verifyHeader(c)
 	if headerErr != nil {
 		return nil,headerErr
 	}
 
 	var errorStrings []string
-	finalValues := make(map[string]string)
+	finalValues := make(map[string]interface{})
 
 	for _,value := range verify {
 		field, exists := c.GetPostForm(value.Name) //todo add multiple header type support
