@@ -7,6 +7,8 @@ import (
 	"errors"
 	"strings"
 	"net/url"
+	"net/http"
+	"bytes"
 )
 
 
@@ -55,11 +57,6 @@ func ObtainVerifyPostInput(c * gin.Context, verify []FieldRequirements) (map[str
 }
 
 func ObtainVerifyGetInput(c * gin.Context, verify []FieldRequirements)(map[string]interface{},error){
-	headerErr := verifyHeader(c)
-	if headerErr != nil {
-		return nil,headerErr
-	}
-
 	var errorStrings []string
 	finalValues := make(map[string]interface{})
 
@@ -85,6 +82,20 @@ func ObtainVerifyGetInput(c * gin.Context, verify []FieldRequirements)(map[strin
 		return finalValues , errors.New(strings.Join(errorStrings," "))
 	} else {
 		return finalValues , nil
+	}
+}
+
+func ParseAndHandleResponse(response *http.Response) (url.Values,int,error){
+	buf := bytes.NewBuffer(make([]byte, 0, response.ContentLength))
+	_, _ = buf.ReadFrom(response.Body)
+
+	values,_:=url.ParseQuery(buf.String())
+	response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return values,response.StatusCode,errors.New(values.Get("error"))
+	} else {
+		return values,response.StatusCode,nil
 	}
 }
 
