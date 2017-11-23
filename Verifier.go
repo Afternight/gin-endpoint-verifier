@@ -22,12 +22,8 @@ const AllAcceptingRegexString = "^*"
 
 const FormEncodedHeader = "application/x-www-form-urlencoded; charset=utf-8"
 
-//todo fix this horrible code duplication
+//todo fix this horrible code duplication and header auth
 func ObtainVerifyPostInput(c * gin.Context, verify []FieldRequirements) (map[string]interface{}, error) {
-	headerErr := verifyHeader(c)
-	if headerErr != nil {
-		return nil,headerErr
-	}
 
 	var errorStrings []string
 	finalValues := make(map[string]interface{})
