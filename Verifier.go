@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"net/http"
 	"bytes"
+	"github.com/dgrijalva/jwt-go"
 )
 
 
@@ -107,6 +108,42 @@ func HandleRequestErrors(c *gin.Context, code int,err error) {
 	v := url.Values{}
 	v.Add("error",err.Error())
 	c.String(code,v.Encode())
+}
+
+func EncodeJWT(toEncode string, key string, rootKey string) (string,error){
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		rootKey: toEncode})
+	secretKey :=[]byte (key)
+	return token.SignedString(secretKey)
+}
+
+func DecodeJWT(originToken string,key string, rootKey string)(url.Values,error){
+	secretKey :=[]byte (key)
+	token, err := jwt.Parse(originToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil,err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok || !token.Valid {
+		return nil,errors.New("invalid token")
+	}
+
+	tokenString := claims[rootKey].(string)
+	parsedValues , parseError := url.ParseQuery(tokenString)
+
+	if parseError != nil {
+		return nil, parseError
+	}
+
+	return parsedValues,nil
 }
 
 func verifyHeader(c *gin.Context) (error) {
