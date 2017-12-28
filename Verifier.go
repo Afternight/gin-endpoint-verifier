@@ -82,7 +82,7 @@ func ObtainVerifyGetInput(c * gin.Context, verify []FieldRequirements)(map[strin
 	}
 }
 
-func ParseAndHandleResponse(response *http.Response) (url.Values,int,error){
+func ParseAndHandleFormResponse(response *http.Response) (url.Values,int,error){
 	buf := bytes.NewBuffer(make([]byte, 0, response.ContentLength))
 	_, _ = buf.ReadFrom(response.Body)
 
@@ -96,6 +96,31 @@ func ParseAndHandleResponse(response *http.Response) (url.Values,int,error){
 	}
 }
 
+//gets the byte stream however parses it as an error if the status is failing
+func GetRespByteStream(response *http.Response) ([]byte, int, error){
+	buf := bytes.NewBuffer(make([]byte, 0, response.ContentLength))
+	_, _ = buf.ReadFrom(response.Body)
+
+	if response.StatusCode != 200 {
+		values,_:=url.ParseQuery(buf.String())
+		response.Body.Close()
+		return buf.Bytes(),response.StatusCode,errors.New(values.Get("error"))
+	} else {
+		return buf.Bytes(),200,nil
+	}
+}
+
+//takes an error and serialises it to the body as a form value
+func HandleRequestErrors(c *gin.Context, code int,err error) {
+	if err != nil {
+		v := url.Values{}
+		v.Add("error",err.Error())
+		c.String(code,v.Encode())
+	} else {
+		c.String(code,"Encountered unknown error")
+	}
+}
+
 func GetEmailRegex() * regexp.Regexp {
 	return regexp.MustCompile(EmailRegexString)
 }
@@ -104,11 +129,6 @@ func GetGeneralRegex() * regexp.Regexp {
 	return regexp.MustCompile(AllAcceptingRegexString)
 }
 
-func HandleRequestErrors(c *gin.Context, code int,err error) {
-	v := url.Values{}
-	v.Add("error",err.Error())
-	c.String(code,v.Encode())
-}
 
 func EncodeJWT(toEncode string, key string, rootKey string) (string,error){
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
